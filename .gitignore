@@ -17,3 +17,5 @@ packrat/src
 
 # ignore live-code-examples folder
 /assets/live-code-examples
+
+/prior-verions
