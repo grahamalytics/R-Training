@@ -64,7 +64,7 @@ for (p in packages) {
 2. Read into R the "banksmp.csv" file
 
 ```{r read_data, include = TRUE, eval = TRUE}
-banksmp <- read_csv("C:\\Users\\glandry\\Desktop\\R Training\\bank\\banksmp.csv", col_types = list(
+banksmp <- read_csv("C:\\Users\\glandry\\Desktop\\Projects\\R-Training\\assets\\data\\banksmp.csv", col_types = list(
     age = col_integer(),
     age_group = col_factor(c("Millennial", "GenX", "Boomer")),
     job = col_factor(c("admin.", "blue-collar", "entrepreneur", "housemaid","management", "retired","self-employed",
@@ -388,10 +388,10 @@ The convenience of the **caret** package is its ability to call many modeling/ML
 
 This package follows the *formula notation* common in R:
 ```{r caret_intro, include = TRUE, eval = FALSE}
-# the ~ represents that we are modeling for the IV based upon a list of DVs separted by +
+# the ~ represents that we are modeling the Dependent Variable (DV) upon a list of Independenvt Variables (IV) based upon a list of IVs separted by +
 DV ~ IV1 + IV2 + IV3 + ... + IVn
 
-# if you'd like to model an IV based upon all DVs, put a . after the ~
+# if you'd like to model a DV based upon all IVs, put a . after the ~
 DV ~ .
 
 ```
