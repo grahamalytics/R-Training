@@ -391,7 +391,7 @@ This package follows the *formula notation* common in R:
 # the ~ represents that we are modeling the Dependent Variable (DV) upon a list of Independenvt Variables (IV) based upon a list of IVs separted by +
 DV ~ IV1 + IV2 + IV3 + ... + IVn
 
-# if you'd like to model a DV based upon all IVs, put a . after the ~
+# if you'd like to model a DV based upon all I Vs, put a . after the ~
 DV ~ .
 
 ```
