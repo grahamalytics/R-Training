@@ -1,0 +1,592 @@
+---
+title: "Data Visualization, Modeling, and R Programming"
+author: "Prepared by Graham Landry for Brierley+Partner's Consumer Insights Team"
+date: "April 7th, 2017"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+packages <- c("knitr", "readr", "dplyr", "ggplot2", "rpart.plot")
+
+for (p in packages) {
+    library(p, character.only = TRUE)
+}
+
+rm(p, packages)
+```
+
+
+
+# This Week's Training Schedule
+The trainings this week will introduce you to the R language as well as demonstrate common tasks during data analysis. We will begin today with an overview of the R language before moving on to importing/writing files, data manipulation, data visualization, modeling, and an introduction to R programming.
+
+Whether the information we cover today is brand new or review, it's a good place to start as it forms the requisite knowledge for the concepts presented on Day 2 and Day 3- not to mention anything else you might want to explore with your knew skills in R.
+
+**The ultimate goal of these trainings is to provide you with a solid foundation upon which you can continue to explore the language and further develop your skillset.**
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\training-schedule.png)</center>
+
+
+# Topics for Today's Training
+<br></br>
+
+- Introduction to ggplot2
+- The Grammar of Graphics
+- Visualizing Data with ggplot2
+- Introduction to caret
+- Modeling with caret
+- Control Flow
+- Writing Your Own Functions
+- Additional Resources
+- Week in Review / Q&A
+
+
+
+# Try it!: Load Packages and Read Data
+
+1. Install/Load the following packages: readr, dplyr, ggplot2, caret, rpart.plot
+```{r include = TRUE, eval = FALSE}
+packages <- c("readr", "dplyr", "ggplot2", "caret", "rpart.plot")
+
+for (p in packages) {
+    if (!require(p, character.only = TRUE)) {
+        install.packages(p)
+        library(p, character.only = TRUE)
+    } else {
+        library(p, character.only = TRUE)
+    }
+}
+
+```
+
+2. Read into R the "banksmp.csv" file
+
+```{r read_data, include = TRUE, eval = TRUE}
+banksmp <- read_csv("C:\\Users\\glandry\\Desktop\\R Training\\bank\\banksmp.csv", col_types = list(
+    age = col_integer(),
+    age_group = col_factor(c("Millennial", "GenX", "Boomer")),
+    job = col_factor(c("admin.", "blue-collar", "entrepreneur", "housemaid","management", "retired","self-employed",
+                       "services", "student", "technician", "unemployed", "unknown")),
+    marital = col_factor(c("divorced", "married", "single")),
+    education = col_factor(c("primary", "secondary", "tertiary", "unknown")),
+    balance = col_integer(),
+    housing = col_factor(c("no", "yes")),
+    loan = col_factor(c("no", "yes")),
+    contact = col_factor(c("cellular", "telephone", "unknown")),
+    duration = col_integer(),
+    campaign = col_integer(),
+    pdays = col_integer(),
+    previous = col_integer(),
+    poutcome = col_factor(c("failure", "other", "success", "unknown")),
+    td_enroll = col_factor(c("no", "yes"))
+))
+
+```
+
+
+
+# Visualizing Data with ggplot2
+We'll be exploring another member of the **tidyverse** package family called **ggplot2** which uses a *grammar of graphics* in combination with other graphics packages to make visualizing data in R effortless.
+
+This package has been widely adopted because of how easy it is to build attractive plots, especially once the structure is understood. It also has a rich set of features that are not as easy as (or available in) *base*:
+
+- Easily create *plot objects* that can be saved and editted later
+- Merge disparate datasets into the same plot
+- Annotate and label plots easily, with several options for customization
+- Add trend lines to a graph without first having to build a model
+- Write plot images to your machine for use in other platforms
+- Combine ggplot's grammar of graphics in the same code chunk as readr, stringr, dplyr, etc. operations
+- And more! See the [ggplot2 online documentation](http://docs.ggplot2.org/current/index.html)
+
+**Note** as a member of the **tidyverse** family it can use the piping operator **%>%** to easily chain together lines of code.
+
+
+
+# The Grammar of Graphics
+The *grammar of graphics* is based upon a book of the same name by Leland Wilkinson, which describes an approach to data visualization through *layering* components together. The **ggplot2** package is designed based upon this approach. The *layers* used to build plots include: 
+
+- **Data**: the information you wish to visualize, along with a set of **aesthetic** mappings which describe how variables *map* to visual attributes (i.e. size, color, etc.)
+- **Layers**: what is actually displayed on the plot. This component is comprised of both **geoms** and **stats**- the first is the shape used for a plot, and the latter is a statistical summary
+- **Scales**: define how data values are mapped into aesthetics (e.g. which colors to assign to each level of categorical variable). Scales also control the legends and axis on a plot
+- **Coords**: controls how coordinates are mapped to a plane, as well as provides gridlines and axes
+- **Facets**: a description of how to break up the data into subsets and display them as small multiples
+- **Themes**: controls the general appearance of the visualization, from background color to font size. You can used either predefined themes, or create your own customized theme
+
+**Note** it is worthwhile to spend some time reading *ggplot2* by Hadley Wickham as it goes into great detail on each of these layers and full demonstrates the level of customization in each.
+
+
+
+# The ggplot2 Recipe
+Using the *grammar of graphics* to build a plot is very convenient, and especially after some practice. The basic recipe for creating a plot with **ggplot2** follows the format below. While these are the most common, of course there are more/ different types of *layers* you can add to your plots (which is why you should read the documentation!)
+
+```{r ggplot2_recipe, include = TRUE, eval = FALSE}
+# create the plot base, define your dataset and global aesthetic options
+ggplot(...) +
+    # add a geom layer to define how the data is represented visually
+    geom_XXX(...) +
+    # add a title to the plot
+    ggtitle(...) +
+    # change the theme to customize the appearance of your plot
+    theme(...)
+```
+
+
+Using the **ggsave()** function, you can save a plot image to your machine. It takes two arguments, the name of a plot object and the file name you wish to write. If you don't pass the function an object, it will default to saving the last plot in memory.
+```{r ggsave, include = TRUE, eval = FALSE}
+# assuming you have a plot object named "plt", you could save it explicity as a .PNG by
+ggsave(plt, "filename.png")
+
+# else, if you wanted to save the last plot in memory you could do the following
+ggsave("filename.png")
+
+```
+
+
+
+# Visualizing the Grammar of Graphics
+
+<br></br>
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\graphics-grammar-viz.png)</center>
+<center>*Fig 3.1: Components of the Grammar of Graphics*</center>
+
+
+# Common Geoms
+<br></br>
+There are many different options to choose from for the **geom** layer, and some of the most common are:
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\geom-all.png)</center>
+<center>*Fig 3.1: Common ggplot2 Geoms*</center>
+<center>*Source: ggplot2 by Hadley Whickham (pg. 81)*</center>
+
+<br></br>
+Let's take a brief detour to the *ggplot2* website and go through the [full list of geom objects](http://docs.ggplot2.org/current/).
+
+
+
+# Common Aesthetics
+<br></br>
+The most commonly used aesthetics are:
+
+- **x**: the data column to present on the x-axis
+- **y**: the data column to present on the y-axis
+- **Color**: the color of the geom (i.e. line, point, bar, etc.)
+- **Fill**: the color of the fill for a geom where it applies (i.e. point, density)
+- **Size**: the size of the geom
+- **Shape**: the specific style of geom (i.e. filled point vs. hollow point)
+
+<br></br>
+To put these options into context, let's take another detour and look at some [aesthetic specifications](http://docs.ggplot2.org/current/vignettes/ggplot2-specs.html).
+
+
+
+# Visualizing Data: bar chart
+A bar chart can be created with the **geom_bar()** geom. If you have continuous data, you can create a histogram with the **geom_histogram()** geom (which uses a default of 30 bins).
+
+```{r barchart, include = TRUE, eval = TRUE, echo = TRUE}
+banksmp %>%
+    ggplot(aes(x = job, fill = td_enroll)) +
+    geom_bar() + 
+    ggtitle("Enrollment Outcome by Job Type") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
+          plot.title = element_text(face = "bold", hjust = 0.5))
+```
+
+
+
+# Try it!: Creating a bar-chart
+Which of these code chunks would result in the plot below?
+
+```{r barchart_ex, include = TRUE, eval = TRUE, echo = FALSE}
+banksmp %>%
+    ggplot(aes(x = education, fill = job)) +
+    geom_bar() + 
+    ggtitle("Job Type by Education Level") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
+          plot.title = element_text(face = "bold", hjust = 0.5))
+```
+
+
+
+# Try it!: Creating a bar-chart (MC)
+```{r barchart_try, include = TRUE, eval = FALSE}
+### Option A
+banksmp %>%
+    ggplot(aes(x = education, fill = td_enroll)) +
+    geom_bar() + 
+    ggtitle("Job Type by Education Level") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+### Option B
+banksmp %>%
+    ggplot(aes(x = age_group)) +
+    geom_point() +
+    ggtitle("Distribution of Records by Age Group") +
+    theme(plot.title = element_text(face = "bold"))
+
+### Option C
+banksmp %>%
+    ggplot(aes(x = education, fill = job)) +
+    geom_bar() + 
+    ggtitle("Job Type by Education Level") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
+          plot.title = element_text(face = "bold", hjust = 0.5))
+
+```
+
+
+
+# Visualizing Data: Density Polygon
+Another way to visualize a continuous distribution is with the **geom_density()** geom. This layer has a *smoothing* parameter you can adjust to make the curve more or less smooth.
+
+```{r density, include = TRUE, eval = TRUE, echo = TRUE}
+banksmp %>%
+    ggplot(aes(x = age, fill = td_enroll, color = td_enroll)) +
+    geom_density(alpha = 0.25) +
+    ggtitle("Age Distributions by Enrollment Outcome") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+```
+
+
+
+# Visualizing Data: box & whisker plot
+Create a box and whisker plot with the **geom_boxplot()** geom.
+
+```{r box_whisker, include = TRUE, eval = TRUE, echo = TRUE}
+banksmp %>%
+    ggplot(aes(x = job, y = duration, fill = job)) +
+    geom_boxplot() +
+    ggtitle("Age Distribution by Job Type") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
+          plot.title = element_text(face = "bold", hjust = 0.5),
+          legend.position = "none")
+
+```
+
+
+
+# Try it!: Creating a box & whisker plot
+Which of these code chunks would result in the plot below?
+
+```{r boxwhisker_ex, include = TRUE, eval = TRUE, echo = FALSE}
+banksmp %>%
+    ggplot(aes(x = age_group, y = age)) +
+    geom_boxplot(fill = c("red", "blue", "green")) +
+    ggtitle("Range of Age Groups") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+```
+
+
+
+# Try it!: Creating a box & whisker plot (MC)
+```{r boxwhisker_try, include = TRUE, eval = FALSE}
+### Option A
+banksmp %>%
+    ggplot(aes(x = age_group, y = age)) +
+    geom_boxplot(fill = "blue") +
+    ggtitle("Range of Age Groups") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+### Option B
+banksmp %>%
+    ggplot(aes(x = age_group, y = age, fill = age_group)) +
+    geom_boxplot() +
+    ggtitle("Range of Age Groups") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5)) 
+
+### Option C
+banksmp %>%
+    ggplot(aes(x = age_group, y = age)) +
+    geom_boxplot(fill = c("red", "blue", "green")) +
+    ggtitle("Range of Age Groups") +
+    theme(plot.title = element_text(face = "italic"))
+
+```
+
+
+
+# Visualizing Data: scatter plot
+Scatterplots are crated with the **geom_point()** geom. If you have an issue with overplotting points, you can add a small about of randomness to each point's position with **geom_jitter()**.
+
+```{r scatterplot, include = TRUE, eval = TRUE, echo = TRUE}
+banksmp %>%
+    ggplot(aes(x = age, y = duration, color = td_enroll)) +
+    geom_point(size = 2, alpha = 0.5) +
+    ggtitle("Duration of Last Call Against Age and Enrollment Outcome") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+```
+
+
+
+# Try it!: scatter plot
+Which of these code chunks would result in the plot below?
+
+```{r scatterplot_ex, include = TRUE, eval = TRUE, echo = FALSE}
+banksmp %>%
+    ggplot(aes(x = age, y = balance, color = td_enroll)) +
+    geom_jitter(size = 2, alpha = 0.5) +
+    ggtitle("Avg Balance Against Age and Enrollment Outcome") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+```
+
+
+
+# Try it!: scatter plot (MC)
+```{r scatterplot_try, include = TRUE, eval = FALSE}
+### Option A
+banksmp %>%
+    ggplot(aes(x = age, y = balance, color = td_enroll)) +
+    geom_point(size = 2, alpha = 0.5) +
+    ggtitle("Avg Balance Against Age and Enrollment Outcome")
+
+### Option B
+banksmp %>%
+    ggplot(aes(x = age, y = balance, color = td_enroll)) +
+    geom_jitter(size = 2, alpha = 0.5) +
+    ggtitle("Avg Balance Against Age and Enrollment Outcome") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5))
+
+### Option C
+banksmp %>%
+    ggplot(aes(x = balance, y = age, color = td_enroll)) +
+    geom_point(size = 2, alpha = 0.5) +
+    ggtitle("Avg Balance Against Age and Enrollment Outcome") +
+    theme(plot.title = element_text(face = "bold", hjust = 0.5))
+```
+
+
+
+# Visualizing Data: pie chart
+To build a pie chart, you'll want to use **polar coordinates**:
+
+```{r pie_chart, include = TRUE, eval = TRUE, echo = TRUE}
+banksmp %>%
+    ggplot(aes(x = factor(1), fill = age_group)) +
+    geom_bar(width = 1) +
+    coord_polar(theta = "y") +
+    ggtitle("Proportions of Age Group") +
+    theme(axis.text.y = element_blank(), axis.text.x = element_blank(), axis.title.y = element_blank(), 
+          axis.title.x = element_blank(), plot.title = element_text(face = "bold", hjust = 0.5))
+
+```
+
+
+
+# Introduction to caret
+The convenience of the **caret** package is its ability to call many modeling/ML packages and their algorithms without having to manually load each one; as well as functions convenient for subsetting and pre-processing data. Take time to read the [caret documentation](http://topepo.github.io/caret/index.html) for more information.
+
+- **CreateDataPartition()**: create subsets of your data for training and testing a model
+- **train()**: train a model fit. Contains a *method* argument for specifying the type of model, followed by any model parameters
+- **predict()**: predict a model fit on new data
+- **set.seed()**: helps with reproducible research by generating a sequence of pseudo random numbers for use in an algorithm which uses randomization (e.g. optimization)
+- **confusionMatrix()**: create confusion matrix (tp, fp, tn, fn) to evaluate a classification algorithm
+
+This package follows the *formula notation* common in R:
+```{r caret_intro, include = TRUE, eval = FALSE}
+# the ~ represents that we are modeling for the IV based upon a list of DVs separted by +
+DV ~ IV1 + IV2 + IV3 + ... + IVn
+
+# if you'd like to model an IV based upon all DVs, put a . after the ~
+DV ~ .
+
+```
+
+
+
+# Creating Train and Test Subsets
+<br></br>
+The **caret** package makes it easy to create subsets of your data for training and testing models. First, we can use the **createDataPartition()** function to return a list of indices for a training set, then use these indices to actually split our data.
+
+```{r train_test, include = TRUE, eval = FALSE, echo = TRUE}
+# randomly sample 70% of data without replacement and return their index position
+indxtrain <- createDataPartition(y = banksmp$td_enroll, p = 0.7, list = FALSE)
+
+# use the index positions to create a subset for training the models
+banktrain <- banksmp[indxtrain,]
+
+# back out those records in the training set to create a subset for testin the models
+banktest <- banksmp[-indxtrain,]
+
+# keep that environment clean!
+rm(i, indxtrain)
+
+```
+
+
+
+# Building and Evaluating a Logistic Regression Model
+<br></br>
+Here we will build a logistic model with *td_enroll* as the dependent variable, and *age*, *duration*, *balance*, and *previous* as independent variables.
+
+```{r logistic, include = TRUE, eval = FALSE}
+# fit a logistic regression model with DV = td_enroll and IVs = age, duration, balance, previous
+logfit <- train(td_enroll ~ age + duration + balance + previous, 
+                data = banktrain , method = "glm", family = "binomial")
+
+# predict outcome in test data set using logfit
+logclasses <- predict(logfit, newdata = banktest)
+
+# view confusion matrix for prediction accuracy and other metrics
+confusionMatrix(data = logclasses, reference = banktest$td_enroll, positive = "yes")
+
+```
+
+<br></br>
+This model could definitely be improved upon with some analytical tender, love, and care. But now you have an idea of how to fit a model using the **caret** package.
+
+
+# Building and Evaluating a Decision Tree Model
+<br></br>
+Using the same independent and dependent variables as in the previous example, let's build a CART decision tree:
+
+```{r decisiontree, include = TRUE, eval = FALSE}
+# fit a CART decision tree with all IVs explaining the DV
+dtfit <- train(td_enroll ~ ., data = banktrain, method = "rpart")
+
+# predict outcome in test data set using dtfit
+dtclasses <- predict(dtfit, newdata = banktest)
+
+# view confusion matrix for prediction accuracy and other metrics
+confusionMatrix(data = dtclasses, reference = banktest$td_enroll, positive = "yes")
+
+# using the rpart.plot pacakge we can view the model structure
+rpart.plot(dtfit$finalModel)
+
+```
+
+<br></br>
+**Note** if you're using a parametric model, then the tuning parameters will be supplied to arguments after *method*.
+
+
+
+# R Control Flow
+Many R users find that they can get by perfectly with stepping through code chunks iteratively (similar to what we've been doing during these trainings). However, R would not be a *programming language* without a formal **control flow**, or constructs useful in building functions, programs, and packages. Examples of three common control flows constructs are shown below, see **?Control** for more information.
+
+```{r control_flow, include = TRUE, eval = FALSE}
+# example of the for loop syntax.This will iterate through the elements of an obect, performing the operations inside the loop for each iteration
+for (i in seq_along(x)) {
+    # do something here
+    
+    # then do some more here
+}
+
+# example of a while loop.This will iterate through the elements of an object while the condition 
+# still holds true. Make sure there eventually is a break from the loop, else you'll get caught in an infinite loop
+while (condition) {
+        # do something here
+    
+    # then do some more here
+}
+
+## example of if-elseif-else flow
+if (condition1) {
+    # do this
+} else if (condition2) {
+    # else do this
+} else {
+    # if the first two conditions aren't true, then do this!
+}
+
+```
+
+
+
+# The *apply Function Family
+<br></br>
+
+An alternative to using for loops in R is available with the ***apply** family of functions. 
+
+<br></br>
+The family includes **apply()**, **lapply()**, **vapply()**, **sapply()**, and more! Amongst them all, the premise remains the same: apply a function to each element of an object. The differences lie in which object types are supplied to the function as well as the type of object(s) returned as a result.
+
+```{r apply_family, include = TRUE, eval = FALSE}
+# apply the table() function to the second through fifth cols of banksmp and return results as a list
+lapply(banksmp[c(2:5)], table)
+
+```
+
+For more information on this family of functions see [DataCamp's tutorial](https://www.datacamp.com/community/tutorials/r-tutorial-apply-family#gs.BLHZWbs).
+
+
+
+# Writing Your Own Functions
+<br></br>
+Functions are another type of object in R. You can define your own functions for use in analysis using the **function(x)** command as such:
+
+```{r functions, include = TRUE, eval = FALSE}
+myfunc <- function(x) {
+    # something here
+    
+    # something else here
+}
+
+```
+
+In the example above, **x** represents an argument to the **myfunc** function. You can specify more arguments, and assign any argument a default value using **arg = [somthing here]**.
+
+
+
+# Try it!: Defining a Function to Calculate Factorials
+
+```{r factorial, include = TRUE, eval = FALSE}
+# here is one way to right a function to return the nth factorial
+# it works, but could be improved for efficiency since it can only take one number
+# and doesn't "learn" from previous calls (i.e. has to recompute each time)
+factorial <- function(x) {
+    if (x < 0) {
+        stop("x should be greater than or equal to zero")
+    } else if (!(x %% 1 == 0)) {
+        stop("x should be an integer value")
+    }
+    
+    sqce <- seq_len(x)
+    tot <- 1
+    
+    if (x == 0) {
+        return(tot)
+        } else {
+
+        for (i in sqce) {
+            tot <- tot * i
+        }
+    }
+    print(tot)
+}
+
+# what shold the factorial of 6 return?
+factorial(6)
+```
+
+
+
+# Additional Materials
+<br></br>
+
+- *ggplot2* by Hadley Wickham
+
+- *R Inferno* by Patrick Burns
+
+- Continue working through remaining **swirl** interactive exercises
+
+- Start exploring **R-bloggers**, **Stack Overflow**, **Quick-R**, and anything else you can get your hands on!
+
+
+
+# Week in Review / Q&A
+ALOT of information was covered this week. With what you've learned, you're now prepared to perform analysis in R from start to finish. Furthermore, by taking time to digest and review the materials presented, you can start to make connections amongst the concepts and continue developing your skillset.
+
+- R Data Structures, Operators, Common *base* Functions
+    - While it's important to understand R's data structures, you also saw this week that the **data frame** is the most common data structure you'll encounter during analysis
+- Reading and Writing Data
+- Reshaping and Manipulating Data, Parsing Strings
+    - This is where the **tidyverse** really shows its advantages. If you ever want to undertake a challenging exercise, try to reproduce some of the results from day two using only *base* and *utils* functions
+- Graphing and Building Models
+- Programming in R with functions and control flow
+
+**Thank you for attending, I hope you found it useful and educational. As you continue to explore R, I encourage you to share things you find helplful and/or interesting- don't forget that *open source* is all about collaboration and shared learning. Now...let's open it up for some questions!**
+

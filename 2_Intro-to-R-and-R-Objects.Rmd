@@ -1,0 +1,774 @@
+---
+title: "Introduction to R and R Objects"
+author: "Prepared by Graham Landry for Brierley+Partner's Consumer Insights Team"
+date: "April 3rd, 2017"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# This Week's Training Schedule
+The trainings this week will introduce you to the R language as well as demonstrate common tasks during data analysis. We will begin today with an overview of the R language before moving on to importing/writing files, data manipulation, data visualization, modeling, and an introduction to R programming.
+
+Whether the information we cover today is brand new or review, it's a good place to start as it forms the requisite knowledge for the concepts presented on Day 2 and Day 3- not to mention anything else you might want to explore with your knew skills in R.
+
+**The ultimate goal of these trainings is to provide you with a solid foundation upon which you can continue to explore the language and further develop your skillset.**
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\training-schedule.png)</center>
+
+
+
+# Topics for Today's Training
+- Introduction to the R Language
+- Importance of Understanding R Objects
+- Object Assignment
+- Operators
+- The Recycling Rule
+- Operating with Boolean Values
+- Generating Numbers
+- R Data Types
+- Special Values in R
+- R Data Structures
+- Object Attributes
+- Testing and Coercing Objects
+- Subsetting and Indexing Objects
+- The Working Directory and R Environments
+- Getting Help with R
+- Additional Resources
+
+# Introduction to the R Language
+As written in the beginning pages of *An Introduction to R* by Venables, Smith, and the R Core Team:
+
+<br></br>
+*R is an integrated suite of software facilities for data manipulation, calculation, and graphical display. Among other things it has:*
+
+- *an effective data handling and storage facility*
+- *a suite of operators for **calculations on arrays**, in particular matrices*
+- *a large, coherent, integrated collection of **tools for data analysis***
+- ***graphical facilities** for data analysis and display, and*
+- *a well developed, **simple and effective programming language** which includes conditionals, loops, user-defined recursive functions and input/output facilities*
+
+<br></br>
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\how-R-works.png)</center>
+<center>*Figure 1.1: How R Works*</center>
+<center>*Source: R for Beginners (pg. 4)*</center>
+
+
+
+# Introduction to the R Language
+<br></br>
+About the language:
+
+- R is a multi-paradigm language with implementations of object-oriented, procedural, and functional programming paradigms (among others)
+- It is open source!! [Comprehensive R Archive Network (CRAN)](https://cran.r-project.org/)
+- The R language as its known today is based upon the **S** language first developed at Bell Labs by John Chambers
+- There is a vast collection of **packages**  available for download. Packages are a collection of reusable R functions typically focused on a certain task or topic (i.e. data wrangling, graphics, machine learning, time-series analysis, etc.)
+
+<br></br>
+As a user:
+
+- R stores all data in active memory, so don't overload it!
+- R is **case sensitive**
+- Commands can be separated either by a new line or ;
+- Commenting in R is done with the # symbol
+
+
+
+# Importance of Understanding R Objects
+
+Having a good understanding of R data types and data structures is important because:
+
+1. It will help you anticipate the output generated from various functions or algorithms
+2. It will help you better understand error and warning messages when they occur
+3. It will greatly increase the velocity with which you learn the language
+
+<br></br>
+For example there are over 200 different **print()** methods, and as you might expect this function can yield different output depending on the object passed into it. Without an understanding of which objects a function operates on, or how a function may behave differently depending on the object, your time spent debugging code and searching for answers online will increase dramatically.
+
+```{r important, include = TRUE, eval = FALSE}
+methods(print)
+```
+
+
+
+# Object Assignment
+To assign an object a value in your environment, you use the **<-** operator which *points* towards the object receiving the value.
+
+<br></br>
+Generally, you have freedom in choosing the name for an object but there are a few rules:
+
+- Object names can contain only letters, numbers, and the characters . and _
+- All object names must start with a letter, or . not followed by a number
+- Be sure to avoid reserved words (see ?Reserved)
+- As best as possible, give contextualized names to objects
+
+<br></br>
+After creating a variable (or any other object), you can remove it from your environment using the **rm()** command.
+
+```{r object_assignment, eval = FALSE}
+# common assignment pattern, pay attention to what happens in your Environment pane
+greet <- "Hello, world!"
+
+# this assignment pattern is less common, but it still works
+"Hello, world...again!" -> greet2
+
+print(c(greet, greet2))
+
+# you can remove a variable from your environment using rm()
+rm(greet, greet2)
+
+```
+
+
+
+# Try it!: Object Assignment
+<br></br>
+Create three new objects- x, y, and z-  with the values 2, 13, and y - x respectively. Notice that here we are using **remove(list=ls())** to remove *all* objects from the environment.
+
+```{r object_assignment_try, include = TRUE, eval = FALSE}
+# assign objects raw values...
+x <- 2
+y <- 13
+
+# or assign objects a value using operations on other objects
+z <- y - x
+
+print(c(x, y, z))
+
+# what would you expect the value of x to be now? what about z?
+x <- x + 5
+
+print(c(x, z))
+
+# you can remove all objects in environment by supplying list=ls() to rm()
+rm(list=ls())
+```
+
+
+
+# Operators
+The R language includes a full inventory of operators commonly used in data analysis. Here is a nice summary table taken from *R for Beginners* (pg. 25). Notice that the equality operator in R is **==** (as opposed to *=* as in other languages).
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\R-operators.png)</center>
+<center>*Figure 1.2: Categorized R Operators*</center>
+<center>*Source: R for Beginners (pg. 25)*</center>
+
+R's operators are **vectorized**: adding two vectors of the same length results in a vector with the same length and containing the element-wise sum.
+
+```{r operators, include = TRUE, eval = FALSE}
+# this is possible
+20 + 33
+
+#  but this is not possible
+"Hello," + "world!"
+
+# operators are vectorized
+x <- c(1, 2, 3)
+y <- c(4, 5, 6)
+
+x + y
+
+# you can also remove objects from the environment using remove()
+remove(x, y)
+
+```
+
+
+
+# The Recycling Rule
+<br></br>
+You might have found yourself asking the question, *what happens if you add together two vectors of different lengths?*
+
+The **recycling rule** comes into effect in these circumstances. The result will be a vector the same length as the longest vector, with the elements of the shorter vector *recycled* to match the length of the longer vector- this includes fractional recycling.
+
+<br></br>
+The graphic on the left depicts vector addition *without recycling*, the middle graphic depicts vector addition with *complete recycling* (of a 2 element vector), and the graphic on the right depicts vector addition with *fractional recycling* (of a 3 element vector).
+
+<br></br>
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\recycling-rule.png)</center>
+<center>*Figure 1.3: Recycling Rule Visualized*</center>
+
+
+
+# Try it!: The Recycling Rule
+<br></br>
+Walk through the following code to see the recycling rule in action!
+
+```{r recycling_rule, include = TRUE, eval = FALSE}
+# assign x the sequence 1 through 5 by 1
+x <- seq(from = 1, to = 5, by = 1)
+
+# R evaluates function arguments by both name and position, this creates a sequence from 6 to 14 in increments of 2
+y <- seq(6, 12, 2)
+
+# assign k the values 0 and 1, and assign z the sequence 1, 2, 3
+k <- c(1, 0)
+z <- 6:10
+
+print(list("x" = x, "y" = y, "k" = k, "z" = z))
+
+x + y # notice the message warning you of fractional recycling
+y + k # no warning message appears with complete recycling...
+x + z # no warning since vectors are the same length
+
+# remove all variables from workspace
+rm(list=ls())
+
+```
+
+
+
+# Operating with Boolean Values
+<br></br>
+In the script below, What results would you expect from the sum() and mean() commands?
+
+```{r operators_bool, include = TRUE, eval = FALSE}
+# here we are assigning a 6-element logical vector to the object named "bool"
+bool <- c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
+
+sum(bool)
+
+mean(bool)
+
+```
+
+
+
+# Try it!: Operating with Boolean Values
+<br></br>
+A nice feature of R is how it represents **TRUE** and **FALSE** "under the hood" as 1 and 0, respectively.
+
+- applying **sum(...)** to a logical vector returns the total number of TRUE records
+- calling **mean(...)** upon a logical vector returns the proportion of TRUE records
+
+```{r operators_bool_try, include = TRUE, eval = TRUE}
+# here we are assigning a 6-element logical vector to the object named "bool"
+bool <- c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE)
+
+sum(bool)
+
+mean(bool)
+
+# cleanup the workspace!
+rm(bool)
+
+```
+
+
+
+# Generating Numbers
+R makes it easy to create sequences of numbers, or randomly draw numbers from a statistical distribution. For creating a sequence, the **:**, **seq()** (sequence), **rep()** (replicate), and **sample()** functions are often used. For commands pertainning to specific distributions, enter **?Distributions** into the console for a list of the common statistical distributions available and their associated fnctions.
+
+```{r}
+# a quick way to create a sequence of numbers is with the : operator
+1:10
+
+# we've saw the seq() function earlier. This comes in handy when you need a certain increment value. Notice the last number!
+seq(from = 1, to = 100, by = 10)
+
+# the rep() function can be used to repeat one or more of the same element(s)
+rep(c(1,2,3), times = 3)
+rep(c(1,2,3), each = 3)
+
+# this generates 15 numbers from the standard normal distribution
+rnorm(n = 15)
+
+
+# draw 10 different numbers between 0 and 50 randomly with replacement
+sample(x = 0:50, size = 10, replace = TRUE)
+
+```
+
+
+
+# Try it!: Generating Numbers
+<br></br>
+Generate the following number sequences:
+
+1. The numbers 25 through 50 using the : operator
+2. A sequence of numbers from 0 to 121, incrementing by 11 each time
+3. Draw 10 random numbers from the standard normal distribution
+4. An ascending sequence of numbers from -15 to 5
+5. Repeat the letters "a", "b", "c", two times each
+
+
+
+# R Data Types
+<br></br>
+There are six data types (modes) which describe how an object is being *stored* within R. There are four common modes, and two less common modes:
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\data-types.png)</center>
+<center>*Figure 1.4: List of R Data Types*</center>
+
+Things worth mentioning:
+
+- If you need a number to be represented and stored as an integer, you must follow the number by the character 'L'.=
+- When using character strings in R, one can use either single or double quotes
+- **R is case sensitive**
+```{r case_sensitivity, include = TRUE, eval = FALSE}
+# try executing the following expressions in your session, pay attention to the output!
+"x" == "X"
+"the" == "The"
+T == TRUE
+True == TRUE
+
+```
+
+
+
+# Special Values in R
+- **NA**: a logical constant and special value in R representing that the value exsists but is unknown. There are several *flavors* of **NA**
+    - You can test whether or not something is NA with **is.na()**. Many functions take the argument **na.rm =** which dropping NA values before the operation when set to TRUE
+- **NULL**: a reserved word representing that the value does not exist
+- **NaN**: Not-a-Number, what will be returned to the console if you enter 0/0
+- **Inf/-Inf**: Infiniti, what will be returned to the console if you enter 1/0
+
+```{r speical_values, include = TRUE, eval = TRUE}
+# NA does not equal NA (how could something you don't know equal another thing you also don't know)
+NA == NA
+
+# another example of how R handles NA values in operations
+c(1:5, NA) + c(1, 2, NA, 4, 5, NA)
+
+# a glipse at the difference btw NULL and NA in functions
+sum(NA); sum(NULL)
+
+```
+
+
+
+# R Data Structures
+<br></br>
+The R language includes a full family of data structures. Always remember, **everything in R is an object**.
+
+- Atomic Objects - **homogeneous** - can only contain *one* data type
+    - **Vectors**: an ordered collection of elements that are all the same type
+    - **Factors**: a vector object used to represent categorical data (categories referred to as *levels*). **Ordered**, factors assumes that there is a natural ranking to the categories
+    - **Matrices**: 2-dimensional (n rows x m columns) generalizations of vectors. Matrices are a special case of arrays
+    - **Arrays**: multi-dimensional generalizations of vectors (e.g. n rows x m columns x k layers)
+- Multimodal Objects - **heterogeneous** - can contain *multiple* data types
+    - **Data Frames**: tabular data structures in which the columns can be of different types, but all columns have the same length (think spreadsheet)
+    - **Lists**: a general form of a vector in which various elements need not be of the same type. This is a recursive data structure, meaning that you can a list can contain elements that are, themselves, also lists
+
+- **Functions**: package-defined and user-defined functions are themselves objects in R which can be stored in the project's workspace
+
+<br> </br>
+**Note** that there are two other R objects, **expressions** and **ts** (for time series), which will not be covered here.
+
+
+
+# Summary of R Data Structures
+<br></br>
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\data-structure-summary.png)</center>
+<center>*Fig 1.5: Summary of Common Data Structures*</center>
+
+
+# Object Attributes
+<br></br>
+All R Objects are associated with **attributes** (metadata for an object). Some of the most common attributes are:
+
+1. **Names**: a character vector giving each element of an object a name
+    - This attribute can be used to refer to an object's elements by name rather than position
+2. **Dimensions**: a numeric vector providing the dimensionality for an object.
+    - Useful in turning vectors into matrices and arrays, as well as during subsetting operations
+3. **Class**: the type of data object. For atomic vectors this is simply the type of vector (i.e. *numeric*, *complex*, *logical*, *character*, *raw*) but *factor*, *matrix*, *array*, *data.frame*, and *function* are other posisble values
+4. **Length**: the number of elements or components of an object
+
+<br></br>
+You can return a complete list of an object's attributes with the **attributes()** command. 
+
+<br></br>
+Alternatively, you can access particular attributes with the **names()**, **dim()**, **class()**, or **length()** commands.
+
+
+
+# Try it!: Vectors
+<br></br>
+Vectors can be created using the combine function **c()**.
+
+**Remember** Vectors are an *ordered* collection of elements.
+
+```{r vectors_try, include = TRUE, eval = FALSE}
+# Create the following vectors
+days <- c("Mon", "Tue", "Wed", "Thurs", "Fri", "Sat", "Sun")
+revenues <- c(1000, 1200, 7500, 9000, 15000, 20000, 18000)
+expenses <- c(1100, 1500, 7500, 6500, 10000, 12000, 8000)
+
+# Vectors can also be created from other vectors
+profitloss <- revenues - expenses
+profitflag <- revenues > expenses # this is a logical vector
+
+# assign names to the revenue vector using the names() command
+print(revenues) # to see the difference before and after assigning names
+names(revenues) <- days
+print(revenues)
+
+# if needed, you can remove the names of a vector
+names(revenues) <- NULL
+print(revenues)
+
+```
+
+
+
+# Try it!: Factors
+Factors are created in R using the **factor()** command. Factors are built upon integer values, so even though they may look like character strings remember "under the hood" they are actually stored as integers.
+
+```{r factors_try, include = TRUE, eval = FALSE}
+# create a character vector of age groups
+agegroup <- c("Millennial", "GenX", "Boomer", "Millennial", "GenX", "Boomer",
+          "Millennial", "Boomer", "Boomer", "Millennial", "Millennial")
+
+print(agegroup)
+
+# now coerce this vector to a factor
+agegroup <- factor(agegroup, levels= c("Millennial", "GenX", "Boomer"))
+
+print(agegroup)
+
+# you can access the levels (aka categories) of the agegroup factor using levels()
+levels(agegroup)
+
+# you can create a frequency table for agegroup using table()
+table(agegroup)
+
+```
+
+<br></br>
+**Note** there is also an *ordered factor* type that can be used to represent ordinal data (data with an inherent ranking, or order, to it). Be careful when using ordered factors, making sure to fully understand the implications of using it within functions (especially as it pertains to modeling/machine learning).
+
+
+
+# Try it!: Matrices
+Create a matrix either with the **matrix()** command or by assigning a dimension attribute to a vector with the **dim()** command.
+
+**Remember** matrices require all values to be the same type (mode).
+
+```{r matrices_try, include = TRUE, eval = FALSE}
+# create a matrix using the matrix() command
+finmatrix <- matrix(c(revenues, expenses), nrow = 7, ncol = 2, 
+                   dimnames = list(NULL, c("Revenues", "Expenses")))
+print(finmatrix)
+
+# cbind() can be used to add new columns
+finmatrix <- cbind(finmatrix, profitloss, profitflag)
+print(finmatrix)
+
+# rbind() can add new columns
+rbind(finmatrix, c(1000, 800, 200, TRUE))
+
+# you can add rownames to a matrix with rownames()
+rownames(finmatrix) <- days
+print(finmatrix)
+
+# check the structure of an object with str(), and a summary of an object with summary()
+str(finmatrix)
+summary(finmatrix)
+
+```
+
+
+<br></br>
+**Matrices** are a special case of (i.e. 2 dimensional) **arrays**. The concepts presented today regarding matrices are generalizable to arrays.
+
+
+
+# Try it!: Data Frames
+Create data frames in R using the **data.frame()** command.
+
+**Remember** data frames are lists of equal-length vectors with class of *data.frame*. They differ from matrices in that they can include columns of different modes.
+
+```{r data_frames_try, include = TRUE, eval = FALSE}
+# create a data frame of named elements
+findf <- data.frame(days = days, revenues = revenues, expenses = expenses,
+                      profitloss = profitloss, profitflag = profitflag)
+
+# look at the output from print(), str(), summary() compared to matrices!!
+print(findf)
+str(findf)
+summary(findf)
+
+```
+
+
+
+# Try it!: Lists
+Lists are created in R using the **list()** command. You might also see lists refered to as **recursive vectors** because a list can contain components that are also lists.
+
+**Remember** lists are an ordered collection of components.
+
+```{r lists_try, include = TRUE, eval = FALSE}
+# Create a list to store all vectors just created
+finlist <- list(days = days, revenues = revenues, expenses = expenses, 
+              profitloss = profitloss, profitflag = profitflag)
+
+# notice the difference in output from print(), str(), summary() compared to matrices!!
+print(finlist)
+str(finlist)
+summary(finlist)
+
+# verify that lists are recursive
+is.recursive(store)
+
+# does this mean vectors are recursive too?
+is.recursive(days)
+
+# the unlist(...) command 'unpacks' a list into vectors and prints the result. 
+unlist(finlist)
+
+# now let's remove names from the list and then unlist()
+names(finlist) <- NULL
+unlist(finlist)
+
+```
+
+
+
+# Testing and Coercing Objects
+<br></br>
+From character to complex, and from vector to data frame, you've now seen the large majority of R's data types (modes) and data structures.
+
+<br></br>
+Sometimes, it is helpful to test for a certain data type or coerce an object from one type to another. The commands for testing and coercing objects are summarized below (along with the commands to create the objects):
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\type-testing-coercion.png)</center>
+<center>*Figure 1.6: R Commands for Creting, Testing, and Coercing Objects*</center>
+
+<br></br>
+**Note** that coercion to a certain data type is not always possible. For example, you can coerce a real number into a character string but you cannot coerce a character string into a numeric/integer value. In general, all data types can be generalized into the *character* type.
+
+
+# Try it!: Testing and Coercing Objects
+<br></br>
+What do you expect the result of these expressions to be? Note that we're using functions to both test for a certain data type or coerce to a certain data type.
+
+```{r test_coer_try, include = TRUE, eval = FALSE}
+# test to see if the days object is a character vector
+is.character(days)
+
+# test to see if the profitloss object is a logical vector
+is.logical(profitloss)
+
+# coerce the revenues object into a character vector...what's the difference btw input and output?
+revenues
+as.character(revenues)
+
+# coerce the days vector into a numeric vector...did you expect the result?
+as.numeric(days)
+
+# test the following objects in regards to their data structure
+is.logical(profitloss)
+is.atomic(days)
+is.data.frame(findf)
+
+# coerce the following objects into different data structures
+as.list(findf)
+as.matrix(findf)
+
+```
+
+
+
+# Subsetting and Indexing Objects
+R has three operators for subsetting objects in the workspace:
+
+- **[**: used to index objects and preserve their structure in the output 
+- **[[**: used to index object and simplify their structure in the output (e.g. subset a list with output returned as a vector)
+- **$** shorthand for using [[ subsetting with a character string (assumes object has been assigned names).
+
+<br></br>
+The major difference in the different subsetting operators, is what *type of object* is returned after indexing. We will go through some examples first before covering this in more detail.
+
+<br></br>
+With these operators, you can subset a vector using the following:
+
+- **Positive Integers**: will return the elements at the specified positions.
+- **Negative Integers**: will omit elements at the specified positions.
+- **Logical Vectors**: will select the elements where the corresponding logical value is TRUE.
+- **Character Vectors**: will return the elements with matching names (implies names have been assigned to an object's elements).
+
+<br></br>
+**Note** R is atypical from most other programming languages in that it indexs starting from 1 (rather than from 0)!!
+
+
+
+# Subsetting: Simplifying vs. Preserving
+<br></br>
+We just took a tour through indexing and subsetting R's different objects, during which it was pointed out that depending on the operator used, the output's data structure can change.
+
+To keep things straight, here is a nice summary of which operators *simplify* or *preserve* the original data structure of the object being indexed:
+
+<br></br>
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\subset-simplify-preserve.png)</center>
+<center>*Fig 1.7: Simplifying vs. Preserving with Subsets!*</center>
+<center>*Source: Advanced R (pg. 41-42)*</center>
+
+
+
+# Try it!: Subsetting and Indexing Vectors
+<br></br>
+Here are examples demonstrating several way to index vectors:
+
+```{r subsetting_vectors, include = TRUE, eval = FALSE}
+# let's refresh ourselves on what the profitloss vector contains
+profitloss # we're not using print in this situation, they are equivalent!
+
+# return the first element of the vector with an positive integer index
+profitloss[1]
+
+# subset the 2nd and 5th elements using c()
+profitloss[c(2, 5)]
+
+# exclude elements of a vector using negative integers
+profitloss[-3]
+
+# subset a vector with a logical vector
+profitloss[profitflag]
+
+```
+
+
+
+# Try it: Subsetting and Indexing Matrices
+<br></br>
+Here are examples showing ways to index matrices. These concepts generalize to arrays, with the main difference being that arrays have more dimensions available to index.
+
+```{r subsetting_matrices, include = TRUE, eval = FALSE}
+# view matrix
+finmatrix
+
+# return the fourth row of the matrix....ROW IS THE FIRST ARGUMENT
+finmatrix[4, ]
+finmatrix[4, , drop = FALSE]
+
+# return just the second column of finmatrix...COLUMN IS THE SECOND ARGUMENT after a ,
+finmatrix[,2]
+
+finmatrix[, 2, drop = FALSE] # setting drop = FALSE preserves the matrix object
+
+# return the element found in the 3rd row, 2nd column of the matrix
+finmatrix[3,2]
+
+# return the 8th element of the matrix (col major order)
+finances[8]
+
+```
+
+<br></br>
+**Note** these concepts generalize to **arrays** (since matrices are a special case of arrays). The main difference being, in the case of arrays, you'll have more *dimensions* to potentially subset.
+
+
+
+# Try it!: Subsetting and Indexing Data Frames
+<br></br>
+Indexing data frames is very similar to indexing matrices, as both are 2-dimensional objects composed of rows and colums:
+
+```{r subsetting_df, include = TRUE, eval = FALSE}
+# view findf
+findf
+
+# return a subset including the last column...as a vector!
+findf[,5]
+
+# return the last column again... but as a data frame!
+findf[5]
+
+# return the fourth row of findf
+findf[4,]
+
+# return the value in the cell located at the first row and third column
+findf[1, 3] # what sort of object does this appear to be
+
+# what do you think the output of this index will be?
+findf[1, 3, drop = FALSE]
+
+# similar to other objets, you can index both by name and using the $ shorthand
+findf$days
+findf["days"]
+
+# subset a data frame using a logical vector
+findf[profitflag, , drop = FALSE]
+
+```
+
+
+
+# Try it!: Subsetting and Indexing Lists
+
+```{r subsetting_lists, include = TRUE, eval = FALSE}
+# print finlist
+finlist
+
+# print the first component of the list as a list
+finlist[1]
+class(finlist[1])
+
+# print the first component of the list as a vector
+finlist[[1]]
+class(finlist[[1]])
+
+# print the second component of the list by name, notice the difference in output!
+finlist["revenues"]
+finlist[["revenues"]]
+
+# lists can be indexed either by number or by name, making this code below equivalent to the one before it
+finlist$revenues
+
+# you can index the "parent" element of a list to access any "children" elements
+# both lines evaluate to prints second element of the "revenues" list component
+finlist[["revenues"]][2]
+finlist$revenues[2]
+
+```
+
+
+
+# The Working Directory and R Environments
+Each R session has a *working directory* which is the specific file path R uses to search for files and/or write files, among other things.
+
+- **getwd()**: returns the current session's working directory (typically a folder on your computer)
+- **setwd()**: takes in a character string, which is the file path you wish to use for a working directory
+- **dir.exists()**: checks to see if a folder exists in the current directory, or specified path. Returns TRUE or FALSE
+- **dir.create()**: can be used to create a new folder on your computer
+- **file.exists()**: checks to see if a file exists in the current directory, or specified path. Returns TRUE or FALSE
+- **file.create()**: can be used to create a new file path on your computer
+- **dir()** or **list.files()**: returns all files that exist in the working diretory
+
+<br></br>
+Each time you use R, there is also an *environment* during each session (actually, there many environments that are nested within each other). These environments are what R searches within to find variables, functions, etc.
+
+- **ls()**: lists all the objects in the current environment
+- **rm()** or **remove()**: remove one or more objects from current environment; **rm(list=ls())** will remove *all* objects
+- **search()**: list of attached environments in the current session
+    - *Environments* have a parent-child relationship, where each enviroment keeps track of its parent but are unaware of which environments are its children. These environments (i.e. the *Global Environment*, packages you load during a session), are what R searches through one-by-one until it finds the object or function used in an expression.
+
+
+
+# Help with R
+<br></br>
+If you ever find yourself wanting more information surrounding objects, fucntions, data structures, packages, or anaything else, try these resources:
+
+- **help() or ?**: search a function name or topic
+- **help.start()**: similar to help() but starts an HTML version of R's documentation
+- **??**: a more robust search of the documentation, uses fuzzy matching
+- [CRAN](https://cran.r-project.org/)
+- [R Tag on Stack Overflow](https://stackoverflow.com/)
+- [R Mailing Lists](https://www.r-project.org/mail.html)
+
+
+
+# Additional Resources
+- *Introduction to R* by Venables, Smith, and the R Core Team
+
+- *R for Beginners* by Emmanuel Paradis
+
+- [TryR](http://tryr.codeschool.com/) is a free online introduction to R sponsored by O'Reilly
+
+- Use the **swirl package** to reinforce the concepts presented today, and better understand R's behavior. This package is an interactive teaching tool, providing both instruction and practice exercises. Install and load the swirl package, and then enter **swirl()** into the console to begin the interactive tutorials
+    
+- In addition to the common operators, R also contains facilities for performing matrix operations especially in the context of linear algebra. Start with [Quick-R's page on Matrix Algebra](http://www.statmethods.net/advstats/matrix.html) if you want to learn more
+

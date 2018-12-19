@@ -1,0 +1,709 @@
+---
+title: "Reading, Writing, and Manipulating Data in R"
+author: "Prepared by Graham Landry for Brierley+Partner's Consumer Insights Team"
+date: "April 5th, 2017"
+output: slidy_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+packages <- c("knitr", "readr", "tidyr", "dplyr", "stringr")
+
+for (p in packages) {
+    library(p, character.only = TRUE)
+}
+
+rm(p, packages)
+```
+
+
+
+# This Week's Training Schedule
+The trainings this week will introduce you to the R language as well as demonstrate common tasks during data analysis. We will begin today with an overview of the R language before moving on to importing/writing files, data manipulation, data visualization, modeling, and an introduction to R programming.
+
+Whether the information we cover today is brand new or review, it's a good place to start as it forms the requisite knowledge for the concepts presented on Day 2 and Day 3- not to mention anything else you might want to explore with your knew skills in R.
+
+**The ultimate goal of these trainings is to provide you with a solid foundation upon which you can continue to explore the language and further develop your skillset.**
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\training-schedule.png)</center>
+
+
+# Topics for Today's Training
+- Functions
+- Base Functions Common in Data Analysis
+- The Power of Packages
+- Introduction to the Tidyverse
+- Reading Data with readr
+- Inspecting Data
+- Tidy Data & Data Wrangling with tidyr
+- Cleaning Code with the Piping Operator
+- Writing Data with readr
+- Other Options for Reading and Writing Data
+- Data Manipulation with dplyr
+- String Manipulation in R
+- Additional Resources
+
+
+# Functions
+At a high level, *functions* take zero, one, or more *arguments*, which instruct functions how exactly to complete a certain task. What actually defines a function's behavior are the different *options* that a user can pass to each argument.
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\functions-diagram.png)</center>
+<center>*Fig 2.1: Functions at a High Level*</center>
+<center>*Source: R for Beginners (pg. 3)*</center>
+
+<br></br>
+You can view a function's arguments (and associated options) by using the **args()** command; or by referencing documentationg using the **?** or the **help()** commands.
+
+```{r functions, include = TRUE, eval = TRUE}
+# view arguments for creating a data frame object
+args(data.frame)
+
+```
+
+
+
+# Arguments
+Some function arguments, called **default arguments**,  have a predefined *option*. If an option is not explicity provided, the default option will be used.
+
+Default arguments are specified as **argument = [something here]** in both the output to the **args()** function and the documentation.
+
+**Don't forget** that functions evaluate arguments by both position and name, and that you do not need to explicity specify any default behavior(s)- although it doesn't hurt to do both!
+
+```{r default_arguments, include = TRUE, eval = TRUE}
+# check the arguments for sort(), notice the default behavior is to sort descending
+args(sort)
+
+# sort descending a random sample of 0:10 with replacement
+sort(sample(0:10, size = 10, replace = TRUE), decreasing = TRUE)
+
+# swith the option for na.rm to TRUE
+sort(sample(0:10, size = 10, replace = TRUE))
+
+```
+
+
+
+# Try it!: Functions and Arguments
+<br></br>
+List some functions that take no arguments (**hint** think back to packages).
+
+<br></br>
+Look at the arguments for the covariance function, **cov()**, and answer these questions:
+
+1. Which of the arguments have default options?
+2. What is the default option to the *method* argument?
+3. How many options are there for the *use* argument?
+
+
+
+# Base Functions Common in Data Analysis
+Here are some functions from the *base* package commommly used in analysis (from *R for Beginners* pg. 36):
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\common-functions-all-annotated.png)</center>
+
+
+
+# The Power of Packages
+The power of R, and open source software in general, is the ability to use code written by other users for specific tasks (as well as to contribute code you might have written for yourself to accomplish something). These compilations of code are referred to as **packages**, and there are more than 9,000 of them available for download.
+
+There are many places to research packages and figure out which ones are the best for the task at hand, but one of the best places to start is the [CRAN Task Views](https://cran.r-project.org/web/views/) webpage. This webpage groups packages into common "tasks", which makes it a lot easier to understand and compare "families" of packages.
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\CRAN-task-views.png)</center>
+<center>*Fig 2.3: Some Examples of CRAN Task Views*</center>
+
+
+
+# Installing, Loading, and Maintaining Packages
+There are two functions pertaining to packages that you will not want to forget: 
+
+- **install.pacakges()**: downloads the source code for packages
+- **library()**: loads the package into the current session (so you can use it!)
+- **require()**:loads a package into the current session, returning FALSE if the package does not exist. Designed to be used inside other functions
+
+```{r installing_loading_packages,eval = FALSE}
+# command to install a specific package/vector of package names
+install.packages("package")
+
+# once package(s) is downloaded, load it into your working session
+library("package")
+
+```
+
+- **package_version()**: return the version of the specific package(s)
+- **update.packages()**: compares the package versions on your machine against the newest version available on the repository, and downloads any updates
+- **packageStatus()**: outputs a summary on the status of installed packages on your machine, as well as information on packages available at various repositories
+    - There are other repositories offering R pacakges besides CRAN (e.g. **R-Forge**)
+
+
+
+# Try it!: Installing and Loading Packages
+<br></br>
+Install and load the following packages (if you don't have them installed already):
+
+- readr
+- tidyr
+- dplyr
+- stringr
+
+
+
+# Introduction to the Tidyverse
+The **tidyverse** is a family of packages that greatly dramatically increase productivity, and which work together very well. Each package caters towards a particular analysis task:
+
+<br></br>
+The tidyverse packages we will use today include:
+
+- **readr** for data importing
+- **tidyr** for reshaping "messy" data
+- **stringr** for working with character strings
+- **dplyr** for data manipulation
+
+<br></br>
+Each of these packages are built with the intention of being used on **tidy** datasets, a familiar concept defining a useful format for structuring data.
+
+<br></br>
+For more information regarding the **tidyverse** packages, check out the [Tidyverse GitHub Page](https://github.com/tidyverse/tidyverse).
+
+
+
+# Reading Data with readr
+The readr package is used to read data from flat files into R quickly and efficiently. Conveniently, the arguments remain the same (give or take a few) across all of the functions:
+
+<br></br>
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\readr-read-functions.png)</center>
+<center>*Fig 2.4: Data Import Functions from readr*</center>
+
+**NOTE** that **read_csv()**, **read_csv2()**, and **read_tsv()** are all special cases of **read_delim()**.
+
+
+
+# Try it!: Return arguments for readr read functions
+<br></br>
+What do you anticipate the resuts to be of the two functions below?
+```{r read_csv_args, include = TRUE, eval = FALSE}
+args(read_delim)
+args(read_csv)
+```
+
+
+
+# Arguments to readr Read Functions
+A complete list of arguments to *readr* functions can be found in the [readr documentation](https://cran.r-project.org/web/packages/readr/readr.pdf). The mostly commonly used are:
+
+- **file**: specify the path to the file for import
+- **delim**: used to specify the field delimeter when using read_delim.
+    - For read_csv(), read_csv2(), and read_tsv() the delimeters are already specified within the function call.
+- **col_names**: set the column names for each field. The default *TRUE* expects a header row, and *FALSE* will auto-generate column names (X1, ..., Xn).
+    - You can also provide a character vector of column names that will be used for column names.
+- **col_types**: useful for specifying the columns types (modes). If *NULL* then the data type will be inferred from the first 1000 rows of the input.
+    - To specify the data type of each column, use the **cols()** argument and one of the following abbreviations: **c** = character, **i** = integer, **n** = number, **d**  double, **l** = logical, **D** = date, **T** = date time, **t** = time, **-** = skip.
+- **na**: tell R which character strings to use for missing values.
+- **skip**: how many lines to skip before reading data
+- **n_max**: the maximum number of lines to import
+
+
+
+# Tryit!: Read Hurricane Data
+<br></br>
+Using the **read_csv()** function, read in the file "3_data_hurricane.csv".
+
+<br></br>
+If you receive an error that the file does not exist, be sure to check/set your working directory!
+
+
+
+# Tryit!: Read Hurricane Data
+```{r hurricane, include = TRUE, eval = FALSE}
+# read file using default behavior
+hrcn <- read_csv("3_data_hurricane_small.csv")
+head(hrcn)
+
+#
+hrcn<- read_csv("3_data_hurricane_small.csv", 
+                    col_names = c("id", "name", "month", "day", "hour", "year", "lat", "lon", 
+                                  paste("radius_34", c("ne", "se", "sw", "nw"), sep = "_"),
+                                  paste("radius_50", c("ne", "se", "sw", "nw"), sep = "_"),
+                                  paste("radius_64", c("ne", "se", "sw", "nw"), sep = "_")), 
+                col_types = "ccnnnnnnnnnnnnnnnnnn", skip = 1)
+
+head(hrcn)
+
+```
+
+
+
+# Inspecting Data
+Next step after reading data is to get familiar with its structure and content. Here are some useful functions for accomplishing this:
+
+- **head()**: returns the first n records of an object
+- **tail()**: returns the last n records of an object
+- **names()**: can be used to either return or set the names of an object
+- **colnames()**: can be used to either return or set the columns names of an object
+- **rownames()**: can be used to either return or set the row names of an object
+- **summary()**: view a summary of an object
+- **str()**: view the structure of an object
+- **nrow()**: returns the number of rows of an object
+- **ncol()**: returns the number of columns of an object
+- **dim()**: returns the dimensions of an object
+- **levels()**: returns the levels of a factor object
+
+
+
+# Try it!: Inspecting Data
+```{r inspect_data_try, include = TRUE, eval = FALSE}
+# let's browse the first 10 records
+head(hrcn, n = 10)
+
+# browset the last 10 records
+tail(hrcn, n = 10)
+
+# now let's see the structure of our dataframe
+str(hrcn)
+
+# lastly, let's view a summary of each column of the dataframe
+summary(hrcn)
+
+# after viewing structure and summary, what do you expect these results to be?
+nrow(hrcn)
+ncol(hrcn)
+
+# remember the column names? What do you expect for row names?
+colnames(hrcn)
+rownames(hrcn)
+
+```
+
+
+
+# What is Tidy Data?
+<br></br>
+The **tidy data** concept is not new, but provides a definition of a common way to structure data for analysis.
+
+<br></br>
+Hadley Wickham, the creator of the tidyverse, reduced this concept into three key principles in a [paper published in the Journal of Statistical Software](https://www.jstatsoft.org/article/view/v059i10):
+
+1. Each variable forms a column (meaning *one* column per variable measured!)
+2. Each observation forms a row
+3. Each type of observational unit forms a table (similar concept to a "schema")
+
+
+
+# Data Wrangling with tidyr
+<br></br>
+The *tidyr* package is used for data wrangling and reshaping. The package contains a family of verbs which can be combined to perform most reshaping actions.
+
+<br></br>
+Today, we'll be covering
+
+- **gather()**: reshapes a wide dataset to a long format
+- **spread()**: reshapes a long dataset to a wide format
+- **unite()**: used to combine two or more columns into a single column
+- **separate()**: used to split one column into two or more columns
+
+<br></br>
+**Note** that **gather()** and **spread()** are opposite actions, as are **unite()** and **separate()**- meaning that one can be used to "undo" the other.
+
+
+
+# Try it!: Understanding the tidyr Verbs
+<br></br>
+View the arguments to the four tidyr verbs presented using the **args()** function.
+
+<br></br>
+Also read the *Description* section of the function using the *?* or *help()* commands.
+
+
+
+# Tidyr: gather() vs. spread()
+The description and arguments for each function are as follows:
+
+- **gather()** will take multiple columns and collapse them into key-value pairs
+    - data = input as a data frame
+    - key = name for the column created containing the "key"
+    - value = name for the column created containing the "value"
+    - ... = the columns to gather, using bare column names (i.e. no quotes). You can exclude columns by preceding them with a minus sign
+    
+- **spread()** will take a key-value pair and expand them across multiple columns
+    - data = input as a data frame
+    - key = name of the column whose values will be used a names for the new columns
+    - value = name of the column whos values will populate the cells of the key -columns
+    - ... = the columns to spread, using bare column names (i.e. no quotes). You can exclude columns by preceding them with a minus sign
+    
+<br></br>
+**Note** there are additional arguments that you can supply to each of these functions depending on the situation at hand. Read the friendly manual!
+
+
+
+# Tidyr: unite() vs. spread()
+The description and arguments for each function are as follows:
+
+- **unite()** will combine multiple columns into one
+    - data = input as a data frame
+    - col = name of column to add (again, a bare name without quotes)
+    - ... = columns you wish to unite. You can exclude columns by preceding them with a minus sign
+    - sep = separator to use between values
+
+- **separate()** will turn a single character-column into multiple columns as determind either by a regular expression or vector of character positions.
+    - data = input as a data frame
+    - col = column you wish to separate
+    - into = names of the new columns to create as character vector
+    - sep = how to separate the original column
+
+<br></br>
+**Note** there are additional arguments that you can supply to each of these functions depending on the situation at hand. Read the friendly manual!
+    
+ 
+  
+# Wide versus Long Data
+Before using *tidyr* to reshape the hurricane data, let's first compare the shape of the data as it is now versus the shape we want as a result:
+
+<br></br>
+Here is the hurricane data in a **non-tidy** format:
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\hurricane-data.png)</center>
+
+<br></br>
+And now here is the hurricane data in a **tidy** format:
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\hurricane-data-tidy.png)</center>
+
+<br></br>
+**Notice** that the data went from a *wide* to a *long* format. While you may not be able to see why the second dataset is *long*, it's only because of the screenshot- you'll prove it to yourself soon enough!
+
+
+
+# Try it!: Reshaping Hurricane Data
+With the hurricane data provided, convert it from a *wide* to a *long* format. Your result should match the formatting of the second image in the previous slide.
+
+Preview the new object after each step to see the effect of each operation.
+
+```{r include = TRUE, eval = FALSE}
+head(hrcn)
+
+# stack the "radius" columns by creating new cols "wind_sp_dr" and "dist"
+h1 <- gather(hrcn, key = wind_sp_dr, value = dist, radius_34_ne:radius_64_nw)
+
+# now separate the "wind_sp_dr" col
+h2 <- separate(h1, col = wind_sp_dr, into = c("drop", "speed", "direction"), sep = "_")
+
+# spread the "direction" col into 4 cols (one for each unique value)
+h3 <- spread(h2, key = direction, value = dist)
+
+# we haven't review this yet, but you can guess that it will filter rows based upon the condition
+h4 <- filter(h3, name == "KATRINA" & year == "2005")
+
+# now that we're dealing with just one storm and one year, let's make our data set lean
+h5 <- unite(h4, col = name, name, year, sep = "-" )
+
+# we'll review select() soon enough, this drops redundant/unnecessary cols
+h6 <- select(h5, -id, -drop)
+
+# once done, let's clean this up
+rm(h1, h2, h3, h4, h5, h6)
+
+```
+
+
+
+
+# Cleaning Code with the Piping Operator
+In the previous solution, we made iterative changes to the hurricane data and saved the result of each change as a new object each time.
+
+<br></br>
+As an alternative, we could use the piping operator **%>%** which passes the results of one function as the input to another automatically- saving you time and keystrokes! It also helps see the "flow" of the operations in context:
+
+```{r piping_operator, include = TRUE, eval = FALSE}
+hrcn <- hrcn %>% 
+    gather(key = wind_sp_dr, value = dist, radius_34_ne:radius_64_nw) %>%
+    separate(col = wind_sp_dr, into = c("drop", "speed", "direction"), sep = "_") %>%
+    spread(key = direction, value = dist) %>%
+    filter(name == "KATRINA" & year == "2005") %>%
+    unite(col = name, name, year, sep = "-" ) %>%
+    select(-id, -drop)
+
+```
+
+The **tidyverse** family of packages are all designed to work with the piping operator.
+
+
+# Writing Data with readr
+The *readr* package can also be used to for write data back to your machine for use at a later date. The benefit of using these functions to write data is their speed (faster than functions from the *utils* package). The write functions follows a similar pattern to the read functions:
+
+<br></br>
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\readr-write-functions.png)</center>
+<center>*Fig 2.5: Data Export Functions from readr*</center>
+
+<br></br>
+**NOTE** that, again, **write_csv()** and **write_tsv()** are all special cases of **write_delim()**.
+
+
+
+# Try it!: Return arguments for readr read functions
+<br></br>
+What do you anticipate the resuts to be of the two functions below?
+```{r write_csv_args, include = TRUE, eval = FALSE}
+args(write_delim)
+args(write_csv)
+```
+
+
+
+# Arguments to readr Write Functions
+The write functions from *readr* package are designed specifically for writing data frames. Complete documentation with examples is available in the [readr documentation](https://cran.r-project.org/web/packages/readr/readr.pdf).
+
+<br></br>
+The most common arguments are:
+
+- **x**: data frame object you wish to write
+- **path**: path or connection you wish to write to
+- **delim**: delimiter used to separate values, defaults to " " (space)
+- **na**: tell R which character strings to use for missing values, defaults to NA
+- **append**: if FALSE (default) will overwrite an existing file with same name. If TRUE, will append records to an existing file with same name
+- **col_names**: controls whether column names should be printed at the top of the file
+
+<br></br>
+**Note** these write functions will *never* write row names (if they exist).
+
+
+
+# Try it!: Writing Data with readr
+<br></br>
+Let's save our tidy version of the filtered hurricane data as a .CSV file:
+
+```{r writing_data_try, include = TRUE, eval = FALSE}
+write_csv(x = hrcn, path = "hrcn_katrina_tidy.csv")
+
+```
+
+
+
+# Other Options for Reading and Writing Data
+
+- The *utils* package has a set of functions for reading and writing. See **?read.table** and **?write.table** for more info
+
+- The *readXL* package is useful for importing Excel data, especially if you need to import from multiple sheets in the same file. Google **readXL package in R** if you want to learn more
+
+- The *data.table* package contains a function **fread()** which is useful for quickly importing large datasets into R. See **??data.table**,  **??fread**, or **??fwrite** for more info. A *data table* is an extension of the data frame for larger data sets and is especially useful for fast aggregations and table manipulation
+
+- If you're interested in reading data into R from a database/writing data into a databaase from R look at the **DBI** (database interface) package in combination with a driver package (e.g.**ROracle**, **RSQLite**, **RMySQL**). The first package is what actually creates a connection to the database, whereas the latter are packages providing a driver specific based upon the database
+
+
+
+# Data Manipulation with dplyr
+The *dplyr* package is to data manipulation what the *tidyr* package is to reshaping data. The six most common data manipulation verbs from *dplyr* are listed below, reference the [dplyr documentation](https://cran.r-project.org/web/packages/dplyr/dplyr.pdf) for explanations and examples of the rest.
+
+- **filter()**: select a subset of rows from a data frame based a filtering condition
+- **arrange()**: reorder rows of a data frame based upon one or more columns. Default sort is ascending, chang this by surrounding the bare column name with desc()
+- **distinct()**: find unique values in a data set
+- **select()**: return only a subset of the columns in the dataset
+- **mutate()**: add new columns to a data set that are functions of existing columns, while keeping original columns
+- **transmute()**: add new columns to a datset that are functions of existing columns, dropping original columns
+- **summarize()**: apply summary functions to a data frame
+- **group_by()**: useful for when you want to use the dplyr verbs but apply them to subsets of the data
+
+
+
+# Try it!: Data Manipulation with dplyr
+Think of what the results will be for the expressions before executing each line:
+
+```{r dplyr_manip, include = TRUE, eval = FALSE}
+hrcn
+
+# filter for only those records occuring Aug 26 - 29
+hrcn %>% filter(day >= 26 & day <= 29)
+
+# arrange the dataset by month, day, and hr
+hrcn %>% arrange(month, day, hour)
+
+# find distinct values of "lat" and "lon"
+hrcn %>% distinct(lat, lon)
+
+# subset data to only include "nw" and "sw" cols
+hrcn %>% select(name, month, day, hour, lat, lon, speed, nw, sw)
+
+# here's a quicker way to get the same result as above
+hrcn %>% select(-c(ne, se))
+
+# collapse all time dimensions into a single col
+hrcn %>% mutate(date = paste(month, day, hour, sep = "-"), time = paste(hour, ":00:00", sep = "")) %>%
+    mutate(datetime = paste(date, time, sep = " ")) %>% select(name, datetime, lat, lon, speed, ne:sw)
+
+# pass the same argument from the first mutate() above into transmute() below to see the difference btw verbs
+hrcn %>% transmute(date = paste(month, day, hour, sep = "-"), time = paste(hour, ":00:00", sep = ""))
+
+# what was the mean distance where wind speed is 34 and "ne"
+hrcn %>% filter(speed == 34) %>% summarize(mean(ne))
+
+# what was the mean distance across all wind speeds in the "ne" direction
+hrcn %>% group_by(speed) %>% summarize(mean(ne))
+
+```
+
+
+
+# String Manipulation in R
+<br></br>
+R has a full set of operations for string mainpulation- making the process of parsing, replacing, and extracting subsets of strings (relatively) easy. We will cover a set of commonly used functions from both the *base* and the *stringr* packages.
+
+<br></br>
+In general, these functions are designed to find/extract/replace some strings based upon a *pattern*. These *patterns* are typically input via **regular expressions**, which are a set of "metacharacters" used to specify a particular sequence of characters. We will briefly cover **regular expressions** with some examples, and to learn more see **?regex**.
+
+<br></br>
+**Note**: the functions we review in this section are especially helpful when performing any sort of text mining.
+
+
+
+# Manipulating Strings with base R
+Some of the useful string manipulation functions from the base package include:
+
+- **nchar()**: returns the number of elements in a character string
+- **toupper()**: converts all elements of the character string to uppercase
+- **tolower()**: converts all elements of the character string to lowercase
+- **paste()**: combine vectors after converting to character strings
+- **cat()**: concatenating character objects together, different behavior from **paste()**
+
+These functions utilize regular expressions to search for patterns within a string:
+
+- **grep()**: returns a vector of the indices of the elements of the string that matched the specified pattern
+- **grepl()**: returns a logical for if the character string contains the specified pattern
+- **sub()**: replaces the first occurence of the specified string pattern with a replacement string
+- **gsub()**: replaces all occurence of the specified string pattern with a replacement string
+- **strsplit()**: splits the elements of a string into substrings based upon split criteria
+
+
+
+# Try it!: String Manipulation with base R
+We'll use five example sentences to demonstrate some *base* string functions:
+
+```{r base_string_manip, include = TRUE, eval = FALSE}
+sntnc <- stringr::sentences[1:5]
+
+sntnc
+
+# how many characters are in each sentence
+nchar(sntnc)
+
+# let's convert the first sentence to all uppercase
+toupper(sntnc)[1]
+
+# which of these sentences contains either the word "birch" or "chicken"
+birchicken <- grep(pattern = "birch | chicken", x = sntnc)
+sntnc[birchicken]
+
+# which of these sentences contains either the word "glue" or "rice"
+gluebowls <- grepl(pattern = "glue | bowls", x = sntnc)
+sntnc[gluebowls]
+
+# to avoid issues with capitalization, convert the character strings to lowercase
+sntnclower <- tolower(sntnc)
+
+# let's replace the first occurrence of "the" within each sentence with "000"
+# do you know why we needed to include the space after both string inputs
+sub(pattern = "the ", replacement = "--- ", x = sntnclower)
+
+# and now repeat what we did above but this time performing a global substitution
+gsub(pattern = "the ", replacement = "--- ", x = sntnclower)
+
+# how we will split the first sentence into individual words
+sntncsplit <- strsplit(sntnc[1], split = " ")[[1]]
+
+```
+
+```{r include = FALSE, eval = TRUE}
+rm(birchicken, gluebowls, sntnclower, sntncsplit)
+```
+
+
+
+# Manipulating Strings with stringr
+<br></br>
+In addition to the base package, the *stringr* package has some string manipulation functions worth knowing:
+
+- **str_order()**: will order a string (default order is a-z)
+- **str_extract()**: extracts parts of a string matching a regular expression pattern
+- **str_to_title()**: converts the string to Title Case
+- **str_pad()**: add extra space (or other pad character) to a string
+- **str_trim()**: trim the whitespace from the beginning and end of a string
+- **word()**: allows you to index the words of a string as if it were a vector
+
+
+
+# Try it!: String Manipulation with stringr
+<br></br>
+Try to anticipate what the result should be!
+
+```{r stringr_string_manip, include = TRUE, eval = FALSE}
+# let's order the first character string in the sntnc object
+str_order(sntncsplit)
+
+sntncsplit[str_order(sntncsplit)]
+
+# extract "chicken leg" from the fourth character string in the sntnc object
+str_extract(sntnc[4], "chicken leg")
+
+
+# put the sntnc object into Title Case
+str_to_title(sntnc)
+
+# pad the third character string in sntnc with four spaces, save new object to sntncpad
+sntncpad <- str_pad(sntnc[3], width = nchar(sntnc[3]) + 8, side = "both")
+sntncpad
+
+# let's remove the padding we just applied
+str_trim(sntncpad, "both")
+
+# print the seventh word from the second character string in sntnc
+word(sntnc[2], 7)
+
+word(sntnc[2], start = 7, end = 8) # if you want to extract multiple words as one string
+
+rm(sntncpad)
+
+```
+
+
+
+# Regular Expressions
+**Regular Expressions** is a language of *metacharacters*, representating string patterns.
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\regex.png)</center>
+<center>*Fig 2.6: Regular Expression Metacharacters*</center>
+
+**Note** this is only a partial list of *metacharacters*, for a more detailed list see **?regex**.
+
+
+
+# Try it!: Manipulating Strings with Regular Expressions
+<br></br>
+Let's walk through a few basic examples illustrating **regular expressions** in action.
+
+```{r regex_try, include = TRUE, eval = FALSE}
+sntnc
+
+# return index of character string containing "'s" using metacharacters
+grep(sntnc, pattern = ".+'s.*")
+
+# extract to the end of the line from wherever "slid" is matched
+str_extract(sntnc, pattern = "slid .+$")
+
+# wherever two "e"s or two "l"s occur, replace with "__"
+gsub(sntnc, pattern = "[e]{2}|[l]{2}", replace = "__")
+
+```
+
+
+
+# Additional Resources
+- Today presented a very high-level and basic introduction to using R packages. Things can start to get hairy when you deal with maintaining difference package versions/binaries, isntalling packages from outside CRAN, installing packags from source, etc. If you want to learn more, start with the [R Installation and Administration Manual](https://cran.r-project.org/doc/manuals/r-release/R-admin.html)
+
+- The *lubridate* package is another member of the **tidyverse** family and is useful when working with dates, especially parsing and formatting. It is quick to learn and apply, see the [lubridate documentation](https//:cran.r-project.org/web/packages/lubridate/lubridate.pdf) for a complete list of functions and examples
+
+- Continue working through the **swirl** package and its interactive tutorials
+
+# Case Study: Applying the tidyverse to Mining User Reviews
+<br></br>
+With the new set of tools learned today, let's apply them while also introducing basic text mining.
+
+<br></br>
+For this section, we will be using the **mining-amazon-reviews.R** file and associated dataset provided along with today's materials.
+
+

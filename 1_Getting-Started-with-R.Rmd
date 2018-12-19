@@ -1,0 +1,98 @@
+---
+title: "Getting Started with R"
+author: "Prepared by Graham Landry for Brierley+Partner's Consumer Insights Team"
+date: "March 27th, 2017"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
+```
+
+# What to Expect
+This guide contains instructions for installing R/RStudio on your machine, a sample script intended as an introduction to some of R's capabilities, and a list of resources for understanding the fundamentals of R's behavior.  
+  
+The slides to follow will guide you through the two-part process of installing R, which includes:
+
+1. Downloading the R language
+2. Downloading an integrated development environment (RStudio)  
+  
+Once you are up-and-running, the sample script will demonstrate some common tasks in R such as: creating numeric sequences, sampling from a statistical distribution, working with vectors and data frames, handling R objects during a session, base plotting, and fitting a linear model (just to name a few).
+
+At the end a list of additional resources will be provided that are helpful for anyone getting started with R. Admittedly, these are not the most exciting readings, but they are definitely worth the time it takes to understand them (especially if you want a better understanding R from a *programming* perspective).
+
+# Step 1: Download R Instance
+The R language (and associated packages) is stored and replicated on a network of servers, each one called a "mirror". The purpose of this network is primarily to ensure load balancing and redundancy in support of R's global user-base. Typically, which mirror you select is dictated by your geographic location, but you have the freedom to choose any mirror.
+
+This guide will download the base binaries from UC Berkley's mirror- to do so, click [here](https://cran.cnr.berkeley.edu/). 
+
+After clicking the hyperlink above, you should see the following page:
+
+**NOTE- If you have already installed the R Language, you can skip to Step 2 for downloading the RStudio IDE.**
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\getting-started-1-zoom.png)</center>
+
+# Step 1: Download R Instance
+After selecting the correct link based upon your operating system, you should come to the page below. Click the link outlined in red to install R for the first time.
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\getting-started-2.png)</center>
+
+
+# Step 1: Download R Instance
+You will now see the page below. Click the link outlined in red, this will start the download of an executable file for installing R.
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\getting-started-3.png)</center>
+
+Once the download is complete, double-click on the file and work through the installation wizard until finished.
+
+# Step 2: Download RStudio
+Now that the R language is installed on your machine, let's download an integrated development environment (IDE) called [R Studio](https://www.rstudio.com/). In general, IDEs facilitate working with a programming language by providing tools to enhance productivity. You will learn more about the specific features of RStudio in a later slide.
+
+Click [here](https://www.rstudio.com/products/rstudio/) to access the download page.
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\RStudio-ide.png)</center>
+
+# Step 2: Download RStudio
+You should now see RStudio's product download page. Scroll down to the section labeled **RStudio Desktop** and click the download link:
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\getting-started-5.png)</center>
+
+# Step 2: Download RStudio
+Upon seeing this page, click the download icon located in the far left column:
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\getting-started-6.png)</center>
+
+# Step 2: Download RStudio
+Find the appropriate installation based upon your operating system. Assuming you are using a Windows machine you will click the link highlighted in red:
+
+<center>![](C:\Users\glandry\Desktop\Projects\R-Training\assets\img\getting-started-7.png)</center>
+
+Once the RStudio executable file downloads, run the file and follow along through the wizard until download is complete.
+
+# About RStudio
+Like most other integrated development environments, RStudio has a rich set of features to facilitate working with the R Language. Some of these features include syntax highlighting, code completion, searchable command history, visual inspector of data tables, quick access to documentation/help, and capabilities to authoring in HTML/PDF/Word (these slides were all authored in HTML with RStudio!!)
+
+If you'd like to learn more about the features of RStudio, here are some good places to start: 
+
+- Click [here](https://vimeo.com/97166163) to view a short video on RStudio
+- This [webpage](https://www.rstudio.com/products/rstudio/features/) lists all the major features of RStudio
+
+# CONGRATS!
+
+**You've now installed R and RStudio on your machine and are ready for analysis!**
+
+If you'd like to get a feel for working with R, open the "Intro-to-R_Appendix-A" file sent in the same email as this document. This serves as a gentle introduction and is taken from *An Introduction to R*
+by Venables, Smith, and the R Core Team (full text is [here](https://cran.r-project.org/doc/manuals/r-release/R-intro.pdf)).
+
+Don't feel that you need to go through the entire sample session, but taking a few minutes to **type** commands into RStudio, examine the output, and interact with the environment is a helpful exercise.
+
+# Additional Resources
+If you find yourself wanting to learn more about R, here are some useful resources geared towards those just getting started:
+
+- ***R For Beginners*** by Emmanuel Paradis (available for free online)
+- ***Introduction to R*** by Venables, Smith, R Core Team (available for free online)
+- **TryR** -- [http://tryr.codeschool.com/](http://tryr.codeschool.com/)
+- **TutorialsPoint: R** -- [www.tutorialspoint.com/r/index.htm](www.tutorialspoint.com/r/index.htm)
+

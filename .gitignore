@@ -1,0 +1,19 @@
+.httr-oauth
+.RData
+.Rhistory
+.Rprofile
+.Rproj.user
+
+# ignore packrat src files
+packrat/lib*/
+packrat/src
+
+# ignore working-files
+/*_working-file.RMD
+
+# ignore prior-verions folder
+/prior-verions
+
+
+# ignore live-code-examples folder
+/assets/live-code-examples
